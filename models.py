@@ -46,9 +46,9 @@ class BLSTMEncoder(nn.Module):
         sent_len, idx_sort = np.sort(sent_len)[::-1], np.argsort(-sent_len)
         idx_unsort = np.argsort(idx_sort)
 
-        idx_sort = torch.from_numpy(idx_sort).cuda() if self.is_cuda() \
+        idx_sort = torch.from_numpy(idx_sort) if self.is_cuda() \
             else torch.from_numpy(idx_sort)
-        sent = sent.index_select(1, Variable(idx_sort).cuda())
+        sent = sent.index_select(1, Variable(idx_sort))
 
         # Handling padding in Recurrent Networks
         sent_packed = nn.utils.rnn.pack_padded_sequence(sent, sent_len.copy())
@@ -57,13 +57,13 @@ class BLSTMEncoder(nn.Module):
         sent_output = nn.utils.rnn.pad_packed_sequence(sent_output)[0]
 
         # Un-sort by length
-        idx_unsort = torch.from_numpy(idx_unsort).cuda() if self.is_cuda() \
+        idx_unsort = torch.from_numpy(idx_unsort) if self.is_cuda() \
             else torch.from_numpy(idx_unsort)
-        sent_output = sent_output.index_select(1, Variable(idx_unsort).cuda())
+        sent_output = sent_output.index_select(1, Variable(idx_unsort))
 
         # Pooling
         if self.pool_type == "mean":
-            sent_len = Variable(torch.FloatTensor(sent_len)).unsqueeze(1).cuda()
+            sent_len = Variable(torch.FloatTensor(sent_len)).unsqueeze(1)
             emb = torch.sum(sent_output, 0).squeeze(0)
             emb = emb / sent_len.expand_as(emb)
         elif self.pool_type == "max":
@@ -275,7 +275,7 @@ class BGRUlastEncoder(nn.Module):
         self.enc_lstm = nn.GRU(self.word_emb_dim, self.enc_lstm_dim, 1,
                                bidirectional=True, dropout=self.dpout_model)
         self.init_lstm = Variable(torch.FloatTensor(2, self.bsize,
-                                  self.enc_lstm_dim).zero_()).cuda()
+                                  self.enc_lstm_dim).zero_())
 
     def forward(self, sent_tuple):
         # sent_len: [max_len, ..., min_len] (batch)
@@ -285,11 +285,11 @@ class BGRUlastEncoder(nn.Module):
         bsize = sent.size(1)
 
         self.init_lstm = self.init_lstm if bsize == self.init_lstm.size(1) else \
-                Variable(torch.FloatTensor(2, bsize, self.enc_lstm_dim).zero_()).cuda()
+                Variable(torch.FloatTensor(2, bsize, self.enc_lstm_dim).zero_())
 
         # Sort by length (keep idx)
         sent_len, idx_sort = np.sort(sent_len)[::-1], np.argsort(-sent_len)
-        sent = sent.index_select(1, Variable(torch.cuda.LongTensor(idx_sort)).cuda())
+        sent = sent.index_select(1, Variable(torch.cuda.LongTensor(idx_sort)))
 
         # Handling padding in Recurrent Networks
         sent_packed = nn.utils.rnn.pack_padded_sequence(sent, sent_len)
@@ -298,7 +298,7 @@ class BGRUlastEncoder(nn.Module):
 
         # Un-sort by length
         idx_unsort = np.argsort(idx_sort)
-        emb = emb.index_select(0, Variable(torch.cuda.LongTensor(idx_unsort)).cuda())
+        emb = emb.index_select(0, Variable(torch.cuda.LongTensor(idx_unsort)))
 
         return emb
 
@@ -320,7 +320,7 @@ class BLSTMprojEncoder(nn.Module):
         self.enc_lstm = nn.LSTM(self.word_emb_dim, self.enc_lstm_dim, 1,
                                 bidirectional=True, dropout=self.dpout_model)
         self.init_lstm = Variable(torch.FloatTensor(2, self.bsize,
-                                  self.enc_lstm_dim).zero_()).cuda()
+                                  self.enc_lstm_dim).zero_())
         self.proj_enc = nn.Linear(2*self.enc_lstm_dim, 2*self.enc_lstm_dim,
                                   bias=False)
 
@@ -332,11 +332,11 @@ class BLSTMprojEncoder(nn.Module):
         bsize = sent.size(1)
 
         self.init_lstm = self.init_lstm if bsize == self.init_lstm.size(1) else \
-                Variable(torch.FloatTensor(2, bsize, self.enc_lstm_dim).zero_()).cuda()
+                Variable(torch.FloatTensor(2, bsize, self.enc_lstm_dim).zero_())
 
         # Sort by length (keep idx)
         sent_len, idx_sort = np.sort(sent_len)[::-1], np.argsort(-sent_len)
-        sent = sent.index_select(1, Variable(torch.cuda.LongTensor(idx_sort)).cuda())
+        sent = sent.index_select(1, Variable(torch.cuda.LongTensor(idx_sort)))
 
         # Handling padding in Recurrent Networks
         sent_packed = nn.utils.rnn.pack_padded_sequence(sent, sent_len)
@@ -348,13 +348,13 @@ class BLSTMprojEncoder(nn.Module):
         # Un-sort by length
         idx_unsort = np.argsort(idx_sort)
         sent_output = sent_output.index_select(1,
-                Variable(torch.cuda.LongTensor(idx_unsort)).cuda())
+                Variable(torch.cuda.LongTensor(idx_unsort)))
 
         sent_output = self.proj_enc(sent_output.view(-1,
             2*self.enc_lstm_dim)).view(-1, bsize, 2*self.enc_lstm_dim)
         # Pooling
         if self.pool_type == "mean":
-            sent_len = Variable(torch.FloatTensor(sent_len)).unsqueeze(1).cuda()
+            sent_len = Variable(torch.FloatTensor(sent_len)).unsqueeze(1)
             emb = torch.sum(sent_output, 0).squeeze(0)
             emb = emb / sent_len.expand_as(emb)
         elif self.pool_type == "max":
@@ -380,7 +380,7 @@ class LSTMEncoder(nn.Module):
         self.enc_lstm = nn.LSTM(self.word_emb_dim, self.enc_lstm_dim, 1,
                                 bidirectional=False, dropout=self.dpout_model)
         self.init_lstm = Variable(torch.FloatTensor(1, self.bsize,
-            self.enc_lstm_dim).zero_()).cuda()
+            self.enc_lstm_dim).zero_())
 
     def forward(self, sent_tuple):
         # sent_len [max_len, ..., min_len] (batch) | sent Variable(seqlen x batch x worddim)
@@ -389,11 +389,11 @@ class LSTMEncoder(nn.Module):
         bsize = sent.size(1)
 
         self.init_lstm = self.init_lstm if bsize == self.init_lstm.size(1) else \
-                Variable(torch.FloatTensor(1, bsize, self.enc_lstm_dim).zero_()).cuda()
+                Variable(torch.FloatTensor(1, bsize, self.enc_lstm_dim).zero_())
 
         # Sort by length (keep idx)
         sent_len, idx_sort = np.sort(sent_len)[::-1], np.argsort(-sent_len)
-        sent = sent.index_select(1, Variable(torch.cuda.LongTensor(idx_sort))).cuda()
+        sent = sent.index_select(1, Variable(torch.cuda.LongTensor(idx_sort)))
 
         # Handling padding in Recurrent Networks
         sent_packed = nn.utils.rnn.pack_padded_sequence(sent, sent_len)
@@ -402,7 +402,7 @@ class LSTMEncoder(nn.Module):
 
         # Un-sort by length
         idx_unsort = np.argsort(idx_sort)
-        emb = sent_output.index_select(0, Variable(torch.cuda.LongTensor(idx_unsort)).cuda())
+        emb = sent_output.index_select(0, Variable(torch.cuda.LongTensor(idx_unsort)))
 
         return emb
 
@@ -424,7 +424,7 @@ class GRUEncoder(nn.Module):
         self.enc_lstm = nn.GRU(self.word_emb_dim, self.enc_lstm_dim, 1,
                                bidirectional=False, dropout=self.dpout_model)
         self.init_lstm = Variable(torch.FloatTensor(1, self.bsize,
-            self.enc_lstm_dim).zero_()).cuda()
+            self.enc_lstm_dim).zero_())
 
     def forward(self, sent_tuple):
         # sent_len: [max_len, ..., min_len] (batch)
@@ -434,11 +434,11 @@ class GRUEncoder(nn.Module):
         bsize = sent.size(1)
 
         self.init_lstm = self.init_lstm if bsize == self.init_lstm.size(1) else \
-                Variable(torch.FloatTensor(1, bsize, self.enc_lstm_dim).zero_()).cuda()
+                Variable(torch.FloatTensor(1, bsize, self.enc_lstm_dim).zero_())
 
         # Sort by length (keep idx)
         sent_len, idx_sort = np.sort(sent_len)[::-1], np.argsort(-sent_len)
-        sent = sent.index_select(1, Variable(torch.cuda.LongTensor(idx_sort)).cuda())
+        sent = sent.index_select(1, Variable(torch.cuda.LongTensor(idx_sort)))
 
         # Handling padding in Recurrent Networks
         sent_packed = nn.utils.rnn.pack_padded_sequence(sent, sent_len)
@@ -448,7 +448,7 @@ class GRUEncoder(nn.Module):
 
         # Un-sort by length
         idx_unsort = np.argsort(idx_sort)
-        emb = sent_output.index_select(0, Variable(torch.cuda.LongTensor(idx_unsort)).cuda())
+        emb = sent_output.index_select(0, Variable(torch.cuda.LongTensor(idx_unsort)))
 
         return emb
 
@@ -470,7 +470,7 @@ class InnerAttentionNAACLEncoder(nn.Module):
         self.enc_lstm = nn.LSTM(self.word_emb_dim, self.enc_lstm_dim, 1,
                                 bidirectional=True)
         self.init_lstm = Variable(torch.FloatTensor(2, self.bsize,
-                                  self.enc_lstm_dim).zero_()).cuda()
+                                  self.enc_lstm_dim).zero_())
 
         self.proj_key = nn.Linear(2*self.enc_lstm_dim, 2*self.enc_lstm_dim,
                                   bias=False)
@@ -487,11 +487,11 @@ class InnerAttentionNAACLEncoder(nn.Module):
         bsize = sent.size(1)
 
         self.init_lstm = self.init_lstm if bsize == self.init_lstm.size(1) else \
-                Variable(torch.FloatTensor(2, bsize, self.enc_lstm_dim).zero_()).cuda()
+                Variable(torch.FloatTensor(2, bsize, self.enc_lstm_dim).zero_())
 
         # Sort by length (keep idx)
         sent_len, idx_sort = np.sort(sent_len)[::-1], np.argsort(-sent_len)
-        sent = sent.index_select(1, Variable(torch.cuda.LongTensor(idx_sort)).cuda())
+        sent = sent.index_select(1, Variable(torch.cuda.LongTensor(idx_sort)))
         # Handling padding in Recurrent Networks
         sent_packed = nn.utils.rnn.pack_padded_sequence(sent, sent_len)
         self.enc_lstm.flatten_parameters()
@@ -501,7 +501,7 @@ class InnerAttentionNAACLEncoder(nn.Module):
         sent_output = nn.utils.rnn.pad_packed_sequence(sent_output)[0]
         # Un-sort by length
         idx_unsort = np.argsort(idx_sort)
-        sent_output = sent_output.index_select(1, Variable(torch.cuda.LongTensor(idx_unsort)).cuda())
+        sent_output = sent_output.index_select(1, Variable(torch.cuda.LongTensor(idx_unsort)))
 
         sent_output = sent_output.transpose(0,1).contiguous()
        
@@ -514,7 +514,7 @@ class InnerAttentionNAACLEncoder(nn.Module):
         sent_key_proj = torch.tanh(sent_key_proj)
         # NAACL paper: u_it=tanh(W_w.h_it + b_w)  (bsize, seqlen, 2nhid)
 
-        sent_w = self.query_embedding(Variable(torch.LongTensor(bsize*[0]).cuda())).unsqueeze(2) #(bsize, 2*nhid, 1)
+        sent_w = self.query_embedding(Variable(torch.LongTensor(bsize*[0]))).unsqueeze(2) #(bsize, 2*nhid, 1)
 
         Temp = 2
         keys = sent_key_proj.bmm(sent_w).squeeze(2) / Temp
@@ -548,7 +548,7 @@ class InnerAttentionMILAEncoder(nn.Module):
         self.enc_lstm = nn.LSTM(self.word_emb_dim, self.enc_lstm_dim, 1,
                                 bidirectional=True)
         self.init_lstm = Variable(torch.FloatTensor(2, self.bsize,
-                                  self.enc_lstm_dim).zero_()).cuda()
+                                  self.enc_lstm_dim).zero_())
 
         self.proj_key = nn.Linear(2*self.enc_lstm_dim, 2*self.enc_lstm_dim,
                                   bias=False)
@@ -565,11 +565,11 @@ class InnerAttentionMILAEncoder(nn.Module):
         bsize = sent.size(1)
 
         self.init_lstm = self.init_lstm if bsize == self.init_lstm.size(1) else \
-                Variable(torch.FloatTensor(2, bsize, self.enc_lstm_dim).zero_()).cuda()
+                Variable(torch.FloatTensor(2, bsize, self.enc_lstm_dim).zero_())
 
         # Sort by length (keep idx)
         sent_len, idx_sort = np.sort(sent_len)[::-1], np.argsort(-sent_len)
-        sent = sent.index_select(1, Variable(torch.cuda.LongTensor(idx_sort)).cuda())
+        sent = sent.index_select(1, Variable(torch.cuda.LongTensor(idx_sort)))
         # Handling padding in Recurrent Networks
         sent_packed = nn.utils.rnn.pack_padded_sequence(sent, sent_len)
         sent_output = self.enc_lstm(sent_packed,
@@ -579,7 +579,7 @@ class InnerAttentionMILAEncoder(nn.Module):
         # Un-sort by length
         idx_unsort = np.argsort(idx_sort)
         sent_output = sent_output.index_select(1,
-            Variable(torch.cuda.LongTensor(idx_unsort)).cuda())
+            Variable(torch.cuda.LongTensor(idx_unsort)))
 
         sent_output = sent_output.transpose(0,1).contiguous()
         sent_output_proj = self.proj_lstm(sent_output.view(-1,
@@ -592,26 +592,26 @@ class InnerAttentionMILAEncoder(nn.Module):
         # Temperature
         Temp = 3
 
-        sent_w1 = self.query_embedding(Variable(torch.LongTensor(bsize*[0]).cuda())).unsqueeze(2) #(bsize, nhid, 1)
+        sent_w1 = self.query_embedding(Variable(torch.LongTensor(bsize*[0]))).unsqueeze(2) #(bsize, nhid, 1)
         keys1 = sent_key_proj.bmm(sent_w1).squeeze(2) / Temp
         keys1 = keys1 + ((keys1 == 0).float()*-1000)
         alphas1 = self.softmax(keys1).unsqueeze(2).expand_as(sent_key_proj)
         emb1 = torch.sum(alphas1 * sent_output_proj, 1).squeeze(1)
 
 
-        sent_w2 = self.query_embedding(Variable(torch.LongTensor(bsize*[1]).cuda())).unsqueeze(2) #(bsize, nhid, 1)
+        sent_w2 = self.query_embedding(Variable(torch.LongTensor(bsize*[1]))).unsqueeze(2) #(bsize, nhid, 1)
         keys2 = sent_key_proj.bmm(sent_w2).squeeze(2) / Temp
         keys2 = keys2 + ((keys2 == 0).float()*-1000)
         alphas2 = self.softmax(keys2).unsqueeze(2).expand_as(sent_key_proj)
         emb2 = torch.sum(alphas2 * sent_output_proj, 1).squeeze(1)
 
-        sent_w3 = self.query_embedding(Variable(torch.LongTensor(bsize*[1]).cuda())).unsqueeze(2) #(bsize, nhid, 1)
+        sent_w3 = self.query_embedding(Variable(torch.LongTensor(bsize*[1]))).unsqueeze(2) #(bsize, nhid, 1)
         keys3 = sent_key_proj.bmm(sent_w3).squeeze(2) / Temp
         keys3 = keys3 + ((keys3 == 0).float()*-1000)
         alphas3 = self.softmax(keys3).unsqueeze(2).expand_as(sent_key_proj)
         emb3 = torch.sum(alphas3 * sent_output_proj, 1).squeeze(1)
 
-        sent_w4 = self.query_embedding(Variable(torch.LongTensor(bsize*[1]).cuda())).unsqueeze(2) #(bsize, nhid, 1)
+        sent_w4 = self.query_embedding(Variable(torch.LongTensor(bsize*[1]))).unsqueeze(2) #(bsize, nhid, 1)
         keys4 = sent_key_proj.bmm(sent_w4).squeeze(2) / Temp
         keys4 = keys4 + ((keys4 == 0).float()*-1000)
         alphas4 = self.softmax(keys4).unsqueeze(2).expand_as(sent_key_proj)
@@ -644,7 +644,7 @@ class InnerAttentionYANGEncoder(nn.Module):
         self.enc_lstm = nn.LSTM(self.word_emb_dim, self.enc_lstm_dim, 1,
                                 bidirectional=True)
         self.init_lstm = Variable(torch.FloatTensor(2, self.bsize,
-            self.enc_lstm_dim).zero_()).cuda()
+            self.enc_lstm_dim).zero_())
 
         self.proj_lstm = nn.Linear(2*self.enc_lstm_dim, 2*self.enc_lstm_dim,
                                    bias=True)
@@ -664,11 +664,11 @@ class InnerAttentionYANGEncoder(nn.Module):
         bsize = sent.size(1)
 
         self.init_lstm = self.init_lstm if bsize == self.init_lstm.size(1) else \
-                Variable(torch.FloatTensor(2, bsize, self.enc_lstm_dim).zero_()).cuda()
+                Variable(torch.FloatTensor(2, bsize, self.enc_lstm_dim).zero_())
 
         # Sort by length (keep idx)
         sent_len, idx_sort = np.sort(sent_len)[::-1], np.argsort(-sent_len)
-        sent = sent.index_select(1, Variable(torch.cuda.LongTensor(idx_sort)).cuda())
+        sent = sent.index_select(1, Variable(torch.cuda.LongTensor(idx_sort)))
         # Handling padding in Recurrent Networks
         sent_packed = nn.utils.rnn.pack_padded_sequence(sent, sent_len)
         sent_output = self.enc_lstm(sent_packed,
@@ -678,7 +678,7 @@ class InnerAttentionYANGEncoder(nn.Module):
         # Un-sort by length
         idx_unsort = np.argsort(idx_sort)
         sent_output = sent_output.index_select(1,
-            Variable(torch.cuda.LongTensor(idx_unsort)).cuda())
+            Variable(torch.cuda.LongTensor(idx_unsort)))
 
         sent_output = sent_output.transpose(0,1).contiguous()
 
@@ -696,7 +696,7 @@ class InnerAttentionYANGEncoder(nn.Module):
         sent_M = torch.tanh(sent_keys + sent_summary)
         # (bsize, seqlen, 2*nhid) YANG : M = tanh(Wh_i + Wh_avg
         sent_w = self.query_embedding(Variable(torch.LongTensor(
-            bsize*[0]).cuda())).unsqueeze(2)  # (bsize, 2*nhid, 1)
+            bsize*[0]))).unsqueeze(2)  # (bsize, 2*nhid, 1)
 
         sent_alphas = self.softmax(sent_M.bmm(sent_w).squeeze(2)).unsqueeze(1)
         # (bsize, 1, seqlen)
@@ -925,7 +925,7 @@ class PDTBNee(nn.Module):
         # s1 : (s1, s1_len)
         
         ss1,ss2=s1
-        sss=Variable(torch.FloatTensor(ss1.size(0),ss1.size(1),self.embeddings.weight.size(1))).cuda()
+        sss=Variable(torch.FloatTensor(ss1.size(0),ss1.size(1),self.embeddings.weight.size(1)))
         #sss=torch.index_select(self.embeddings, 2, ss1)
         for i in range(ss1.size(0)):
             for j in range (sss.size(1)):
@@ -1150,9 +1150,9 @@ class BLSTMEncoderc(nn.Module):
         sent_len, idx_sort = np.sort(sent_len)[::-1], np.argsort(-sent_len)
         idx_unsort = np.argsort(idx_sort)
 
-        idx_sort = torch.from_numpy(idx_sort).cuda() if self.is_cuda() \
+        idx_sort = torch.from_numpy(idx_sort) if self.is_cuda() \
             else torch.from_numpy(idx_sort)
-        sent = sent.index_select(1, Variable(idx_sort).cuda())
+        sent = sent.index_select(1, Variable(idx_sort))
 #        print('sent')
         
  #       print(sent)
@@ -1194,7 +1194,7 @@ class BLSTMEncoderc(nn.Module):
 #        print('sent')
 #        print(sent)
 #        print(Variable(torch.LongTensor(uuuua).cuda()).view(-1,1,1).repeat(1, 1,char_output.size(2))-1)
-        char_output=torch.gather(char_output,1,Variable(torch.LongTensor(uuuua).cuda()).view(-1,1,1).repeat(1, 1,char_output.size(2))-1)
+        char_output=torch.gather(char_output,1,Variable(torch.LongTensor(uuuua)).view(-1,1,1).repeat(1, 1,char_output.size(2))-1)
         #char_output=char_output.index_select(1,Variable(torch.LongTensor(uuuua).cuda()))
 #        print('char_output')
 #        print(char_output)
@@ -1215,11 +1215,11 @@ class BLSTMEncoderc(nn.Module):
         # Un-sort by length
         idx_unsort = torch.from_numpy(idx_unsort).cuda() if self.is_cuda() \
             else torch.from_numpy(idx_unsort)
-        sent_output = sent_output.index_select(1, Variable(idx_unsort).cuda())
+        sent_output = sent_output.index_select(1, Variable(idx_unsort))
 
         # Pooling
         if self.pool_type == "mean":
-            sent_len = Variable(torch.FloatTensor(sent_len)).unsqueeze(1).cuda()
+            sent_len = Variable(torch.FloatTensor(sent_len)).unsqueeze(1)
             emb = torch.sum(sent_output, 0).squeeze(0)
             emb = emb / sent_len.expand_as(emb)
         elif self.pool_type == "max":

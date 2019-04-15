@@ -96,7 +96,7 @@ if params.wed==300:
     GLOVE_PATH = "glove.840B.300d.txt"
 
 # set gpu device
-torch.cuda.set_device(params.gpu_id)
+#torch.cuda.set_device(params.gpu_id)
 
 # print parameters passed, and all parameters
 print('\ntogrep : {0}\n'.format(sys.argv[1:]))
@@ -108,7 +108,7 @@ SEED
 """
 np.random.seed(params.seed)
 torch.manual_seed(params.seed)
-torch.cuda.manual_seed(params.seed)
+#torch.cuda.manual_seed(params.seed)
 
 """
 DATA
@@ -233,7 +233,7 @@ config_nli_model = {
     'pool_type'      :  params.pool_type      ,
     'nonlinear_fc'   :  params.nonlinear_fc   ,
     'encoder_type'   :  params.encoder_type   ,
-    'use_cuda'       :  True                  ,
+    'use_cuda'       :  False                  ,
 
 }
 print(config_nli_model)
