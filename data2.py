@@ -84,38 +84,43 @@ def get_nli(data_path):
     test = {'s1': s1['test']['sent'], 's2': s2['test']['sent'],
             'label': target['test']['data']}
     return train, dev, test
-    
+
 def get_pdtb(data_path,dom,dat,tv):
     s1 = {}
     s2 = {}
     target = {}
-    
+
     targetv = {}
-    
+
     dico_label = {'1': 0,  '2': 1}
-    
+
     for data_type in ['trainu','train','unlab','test']:
         s1[data_type], s2[data_type], target[data_type],targetv[data_type] = {},{}, {}, {}
     s1['train']['path'] = os.path.join(data_path, 'data.txt')
-    
-    if dat=='twitter':
-        s1['test']['path'] = os.path.join(data_path, 'twitters.txt')
 
-        target['test']['path'] = os.path.join(data_path,'twitterl.txt')
-        targetv['test']['path'] = 'dataset/data/tlv.txt'
-        s1['unlab']['path'] ='dataset/data/twitteru.txt'
-    elif dat=='yelp':
-        s1['test']['path'] = os.path.join(data_path, 'ys.txt')
-        target['test']['path'] = os.path.join(data_path,'yl.txt')
-        targetv['test']['path'] = 'dataset/data/ylv.txt'
-        s1['unlab']['path'] = 'dataset/data/yelpu.txt'
-    
-    elif dat=='movie':
-        s1['test']['path'] = os.path.join(data_path, 'ms.txt')
-        target['test']['path'] = os.path.join(data_path,'ml.txt')
-        targetv['test']['path'] = 'dataset/data/mlv.txt'
-        s1['unlab']['path'] = 'dataset/data/moviesu.txt'
-    
+#    if dat=='twitter':
+#        s1['test']['path'] = os.path.join(data_path, 'twitters.txt')
+#
+#        target['test']['path'] = os.path.join(data_path,'twitterl.txt')
+#        targetv['test']['path'] = 'dataset/data/tlv.txt'
+#        s1['unlab']['path'] ='dataset/data/twitteru.txt'
+#    elif dat=='yelp':
+#        s1['test']['path'] = os.path.join(data_path, 'ys.txt')
+#        target['test']['path'] = os.path.join(data_path,'yl.txt')
+#        targetv['test']['path'] = 'dataset/data/ylv.txt'
+#        s1['unlab']['path'] = 'dataset/data/yelpu.txt'
+#
+#    elif dat=='movie':
+#        s1['test']['path'] = os.path.join(data_path, 'ms.txt')
+#        target['test']['path'] = os.path.join(data_path,'ml.txt')
+#        targetv['test']['path'] = 'dataset/data/mlv.txt'
+#        s1['unlab']['path'] = 'dataset/data/moviesu.txt'
+
+    s1['test']['path'] = '/home/soniassfsl26/masters/HelpfulReviewDetector/datasets/Musical_Instruments_5.txt'
+    target['test']['path'] = os.path.join(data_path,'yl.txt')
+    targetv['test']['path'] = 'dataset/data/ylv.txt'
+    s1['unlab']['path'] = 'dataset/data/yelpu.txt'
+
     s1['trainu']['path'] = os.path.join(data_path, 'aaai15unlabeled/all.60000.sents')
 
     target['train']['path'] = os.path.join(data_path,'label.txt')
@@ -126,7 +131,7 @@ def get_pdtb(data_path,dom,dat,tv):
     s1['unlab']['sent'] = [line.rstrip() for line in open(s1['unlab']['path'], 'r')]
     s1['test']['sent'] = [line.rstrip() for line in open(s1['test']['path'], 'r')]
     s1['trainu']['sent'] = [line.rstrip() for line in open(s1['trainu']['path'], 'r')]
-   
+
     target['train']['data'] = np.array([dico_label[line.rstrip('\n')]
                 for line in open(target['train']['path'], 'r')])
     target['test']['data'] = np.array([dico_label[line.rstrip('\n')]
@@ -136,11 +141,11 @@ def get_pdtb(data_path,dom,dat,tv):
                 for line in open(targetv['test']['path'], 'r')])
     target['trainu']['data'] = np.array([int(float(line.rstrip('\n'))>0.5)
                 for line in open(target['trainu']['path'], 'r')])
-    if not (dat=='subso'):   
+    if not (dat=='subso'):
         assert len(s1['train']['sent'])== len(target['train']['data'])
 
     print('** {0} DATA : Found {1} of {2} sentences.'.format(data_type.upper(), len(s1['train']['sent']), 'train'))
-    if dat=='twi':   
+    if dat=='twi':
         train = {'s1': s1['test']['sent'][:tv],# 's2': s2['train']['sent'],
                  'label': target['test']['data'][:tv]}
     elif dat=='pdtb':
@@ -149,15 +154,15 @@ def get_pdtb(data_path,dom,dat,tv):
     elif dat=='pdtb2':
         train = {'s1': s1['train']['sent'][:49280],# 's2': s2['train']['sent'],
                  'label': target['train']['data'][:49280]}
-    
-    elif dom==1:   
+
+    elif dom==1:
         train = {'s1': s1['train']['sent'],# 's2': s2['train']['sent'],
                  'label': target['train']['data']}
-    
-    elif dom==2:   
+
+    elif dom==2:
         train = {'s1': s1['train']['sent'][:2000],# 's2': s2['train']['sent'],
                  'label': target['train']['data'][:2000]}
-        
+
     else:
         train = {'s1': s1['train']['sent'][:2877],# 's2': s2['train']['sent'],
                  'label': target['train']['data'][:2877]}
@@ -168,5 +173,5 @@ def get_pdtb(data_path,dom,dat,tv):
              'label': target['trainu']['data']}
     dev = {'s1': s1['test']['sent'][:tv],'label': target['test']['data'][:tv],'labelv': targetv['test']['data'][:tv]}
     test = {'s1': s1['test']['sent'][tv:],'label': target['test']['data'][tv:],'labelv': targetv['test']['data'][tv:]}
- 
+
     return train, dev, test,unlab,trainu

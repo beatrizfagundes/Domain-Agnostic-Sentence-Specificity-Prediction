@@ -152,7 +152,7 @@ def getFeatures(fin):
     #aligner.fBrownCluster()
     y,xs = aligner.transformShallow()
     print (len(xs))
-    
+
     #_,xw = aligner.transformWordRep()
     return y,xs
 
@@ -163,23 +163,24 @@ train,valid, test,unlab ,trainu= get_pdtb(params.nlipath,params.dom,params.test_
 #print (train[s1].shape)
 _,xsl = getFeatures(os.path.join(params.nlipath,'data.txt'))
 
-if params.test_data=="twitter":
-    _,xst= getFeatures(os.path.join(params.nlipath,'twitters.txt'))
-    _,xsu = getFeatures('dataset/data/twitteru.txt')
+#if params.test_data=="twitter":
+#    _,xst= getFeatures(os.path.join(params.nlipath,'twitters.txt'))
+#    _,xsu = getFeatures('dataset/data/twitteru.txt')
+#
+#elif params.test_data=="yelp":
+#    _,xst= getFeatures(os.path.join(params.nlipath,'ys.txt'))
+#    _,xsu = getFeatures('dataset/data/yelpu.txt')
+#
+#elif params.test_data=="movie":
+#    _,xst= getFeatures(os.path.join(params.nlipath,'ms.txt'))
+#    _,xsu = getFeatures('dataset/data/moviesu.txt')
 
-
-elif params.test_data=="yelp":
-    _,xst= getFeatures(os.path.join(params.nlipath,'ys.txt'))
-    _,xsu = getFeatures('dataset/data/yelpu.txt')
-
-elif params.test_data=="movie":
-    _,xst= getFeatures(os.path.join(params.nlipath,'ms.txt'))
-    _,xsu = getFeatures('dataset/data/moviesu.txt')
-
+_,xst= getFeatures('/home/soniassfsl26/masters/HelpfulReviewDetector/datasets/Musical_Instruments_5.txt')
+_,xsu = getFeatures('dataset/data/yelpu.txt')
 
 _,xslu= getFeatures(os.path.join(params.nlipath, 'aaai15unlabeled/all.60000.sents'))
 
-mmm=(np.mean(np.asarray(xsu),axis=0))  
+mmm=(np.mean(np.asarray(xsu),axis=0))
 vvv=(np.var(np.asarray(xsu),axis=0))
 vvv[vvv==0]=1
 if params.norm==1:
@@ -209,7 +210,7 @@ if params.sptrain==1:
 for split in ['s1']:
     for data_type in ['train', 'valid', 'test', 'unlab', 'trainu']:
         eval(data_type)[split] = np.array([['<s>'] +
-            [word for word in sent.split() if word in word_vec] 
+            [word for word in sent.split() if word in word_vec]
             #+            ['</s>']
             for sent in eval(data_type)[split]])
 params.word_emb_dim = params.wed
@@ -287,7 +288,7 @@ def get_batch_aug(batch, word_vec):
 #            print(word_vec[batch[i][j]])
             qq=random.random()
             if qq<params.dprob:
-                os=os+1                
+                os=os+1
                 if j+os<len(batch[i]) and j<max_len:
                     embed[j, i, :] = word_vec[batch[i][j+os]]+ np.random.normal(0, params.gnoise, params.word_emb_dim )
             elif qq<params.dprob+params.iprob:
@@ -313,7 +314,7 @@ def update_ema_variables(model, ema_model, alpha, global_step):
 
 def evaluate(epoch, eval_type='valid', final_eval=False):
     kko=open('predictions.txt','w')
-        
+
 
     pdtb_net.eval()
     pdtb_net2.eval()
@@ -329,7 +330,7 @@ def evaluate(epoch, eval_type='valid', final_eval=False):
     target = valid['label'] if eval_type == 'valid' else test['label']
     targetv = valid['labelv'] if eval_type == 'valid' else test['labelv']
     for i in range(0, len(s1), params.batch_size):
-    
+
         # prepare batch
         s1_batch, s1_len = get_batch(s1[i:i + params.batch_size], word_vec,params.wed)
         if eval_type == 'valid':
@@ -339,7 +340,7 @@ def evaluate(epoch, eval_type='valid', final_eval=False):
         if config_nli_model['use_cuda']:
             s1_batch= Variable(s1_batch).cuda()*params.wf
             s1_batchf= Variable(s1_batchf).cuda()
-          
+
             tgt_batch = Variable(torch.LongTensor(target[: params.batch_size])).cuda()
             tgtv_batch = Variable(torch.FloatTensor(targetv[: params.batch_size])).cuda()
         else:
@@ -348,15 +349,15 @@ def evaluate(epoch, eval_type='valid', final_eval=False):
             tgt_batch = Variable(torch.LongTensor(target[i:i + params.batch_size]))#.cuda()
             tgtv_batch = Variable(torch.FloatTensor(targetv[i:i + params.batch_size]))#.cuda()
 
-        
+
         # model forward
-        output = pdtb_net2((s1_batch, s1_len),s1_batchf) 
+        output = pdtb_net2((s1_batch, s1_len),s1_batchf)
         ou2 = F.softmax(output, dim=1)
-            
+
         for sis in range(output.size(0)):
             kko.write(str(ou2.data[sis,1])+'\n')
-        
-        
+
+
 
     return 0
 
