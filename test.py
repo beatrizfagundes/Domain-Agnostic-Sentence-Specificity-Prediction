@@ -176,8 +176,8 @@ elif params.test_data=="movie":
     _,xsu = getFeatures('dataset/data/moviesu.txt')
 
 else:
-    _,xst= getFeatures(dat.replace('_train.txt', '.txt'))
-    _,xsu = getFeatures(dat)
+    _,xst= getFeatures(params.test_data.replace('_train.txt', '.txt'))
+    _,xsu = getFeatures(params.test_data)
 
 _,xslu= getFeatures(os.path.join(params.nlipath, 'aaai15unlabeled/all.60000.sents'))
 
