@@ -4,3 +4,4 @@ dataset/SNLI
 encoder/infersent.allnli.pickle
 
 *.swp
+glove.840B.300d.*

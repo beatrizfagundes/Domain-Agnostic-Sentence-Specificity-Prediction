@@ -98,28 +98,29 @@ def get_pdtb(data_path,dom,dat,tv):
         s1[data_type], s2[data_type], target[data_type],targetv[data_type] = {},{}, {}, {}
     s1['train']['path'] = os.path.join(data_path, 'data.txt')
 
-#    if dat=='twitter':
-#        s1['test']['path'] = os.path.join(data_path, 'twitters.txt')
-#
-#        target['test']['path'] = os.path.join(data_path,'twitterl.txt')
-#        targetv['test']['path'] = 'dataset/data/tlv.txt'
-#        s1['unlab']['path'] ='dataset/data/twitteru.txt'
-#    elif dat=='yelp':
-#        s1['test']['path'] = os.path.join(data_path, 'ys.txt')
-#        target['test']['path'] = os.path.join(data_path,'yl.txt')
-#        targetv['test']['path'] = 'dataset/data/ylv.txt'
-#        s1['unlab']['path'] = 'dataset/data/yelpu.txt'
-#
-#    elif dat=='movie':
-#        s1['test']['path'] = os.path.join(data_path, 'ms.txt')
-#        target['test']['path'] = os.path.join(data_path,'ml.txt')
-#        targetv['test']['path'] = 'dataset/data/mlv.txt'
-#        s1['unlab']['path'] = 'dataset/data/moviesu.txt'
+    if dat=='twitter':
+        s1['test']['path'] = os.path.join(data_path, 'twitters.txt')
 
-    s1['test']['path'] = '/home/soniassfsl26/masters/HelpfulReviewDetector/datasets/Musical_Instruments_5.txt'
-    target['test']['path'] = os.path.join(data_path,'yl.txt')
-    targetv['test']['path'] = 'dataset/data/ylv.txt'
-    s1['unlab']['path'] = 'dataset/data/yelpu.txt'
+        target['test']['path'] = os.path.join(data_path,'twitterl.txt')
+        targetv['test']['path'] = 'dataset/data/tlv.txt'
+        s1['unlab']['path'] ='dataset/data/twitteru.txt'
+    elif dat=='yelp':
+        s1['test']['path'] = os.path.join(data_path, 'ys.txt')
+        target['test']['path'] = os.path.join(data_path,'yl.txt')
+        targetv['test']['path'] = 'dataset/data/ylv.txt'
+        s1['unlab']['path'] = 'dataset/data/yelpu.txt'
+
+    elif dat=='movie':
+        s1['test']['path'] = os.path.join(data_path, 'ms.txt')
+        target['test']['path'] = os.path.join(data_path,'ml.txt')
+        targetv['test']['path'] = 'dataset/data/mlv.txt'
+        s1['unlab']['path'] = 'dataset/data/moviesu.txt'
+
+    else:
+        s1['test']['path'] = dat.replace('_train.txt', '.txt')
+        target['test']['path'] = os.path.join(data_path,'yl.txt')
+        targetv['test']['path'] = 'dataset/data/ylv.txt'
+        s1['unlab']['path'] = dat
 
     s1['trainu']['path'] = os.path.join(data_path, 'aaai15unlabeled/all.60000.sents')
 

@@ -155,7 +155,7 @@ def getFeatures(fin):
     #aligner.fBrownCluster()
     y,xs = aligner.transformShallow()
     print (len(xs))
-    
+
     #_,xw = aligner.transformWordRep()
     return y,xs
 
@@ -175,10 +175,13 @@ elif params.test_data=="movie":
     _,xst= getFeatures(os.path.join(params.nlipath,'ms.txt'))
     _,xsu = getFeatures('dataset/data/moviesu.txt')
 
+else:
+    _,xst = getFeatures(os.path.join(params.nlipath,'ys.txt'))
+    _,xsu = getFeatures(params.test_data)
 
 _,xslu= getFeatures(os.path.join(params.nlipath, 'aaai15unlabeled/all.60000.sents'))
 
-mmm=(np.mean(np.asarray(xsu),axis=0))  
+mmm=(np.mean(np.asarray(xsu),axis=0))
 vvv=(np.var(np.asarray(xsu),axis=0))
 vvv[vvv==0]=1
 if params.norm==1:
@@ -205,7 +208,7 @@ if params.sptrain==1:
 for split in ['s1']:
     for data_type in ['train', 'valid', 'test', 'unlab', 'trainu']:
         eval(data_type)[split] = np.array([['<s>'] +
-            [word for word in sent.split() if word in word_vec] 
+            [word for word in sent.split() if word in word_vec]
             #+            ['</s>']
             for sent in eval(data_type)[split]])
 params.word_emb_dim = params.wed
@@ -281,7 +284,7 @@ def get_batch_aug(batch, word_vec):
 #            print(word_vec[batch[i][j]])
             qq=random.random()
             if qq<params.dprob:
-                os=os+1                
+                os=os+1
                 if j+os<len(batch[i]) and j<max_len:
                     embed[j, i, :] = word_vec[batch[i][j+os]]+ np.random.normal(0, params.gnoise, params.word_emb_dim )
             elif qq<params.dprob+params.iprob:
@@ -300,7 +303,7 @@ def update_ema_variables(model, ema_model, alpha, global_step):
         ema_param.data.mul_(alpha).add_(1 - alpha, param.data)
 
 def trainepoch(epoch):
-    
+
     print('\nTRAINING : Epoch ' + str(epoch))
     pdtb_net.train()
     pdtb_net2.train()
@@ -326,15 +329,15 @@ def trainepoch(epoch):
     print('Learning rate : {0}'.format(optimizer.param_groups[0]['lr']))
 
     for stidx in range(0, params.esize, params.batch_size):
-    
+
         s1_batch, s1_len = get_batch_aug(s1[stidx:stidx + params.batch_size],
                                      word_vec)
         s1_batch2, s1_len2 = get_batch_aug(s1[stidx:stidx + params.batch_size],
                                      word_vec)
-        
+
         s1_batchf=torch.from_numpy(s1f[stidx:stidx + params.batch_size]+ np.random.normal(0, params.gnoise2, 14 )).float()*params.sf
         s1_batchf2=torch.from_numpy(s1f[stidx:stidx + params.batch_size]+ np.random.normal(0, params.gnoise2, 14 )).float()*params.sf
-        
+
         su_batch, su_len = get_batch_aug(s_u[stidx:stidx + params.batch_size],
                                      word_vec)
         su_batchf=torch.from_numpy(suf[stidx:stidx + params.batch_size]+ np.random.normal(0, params.gnoise2, 14 )).float()*params.sf
@@ -349,7 +352,7 @@ def trainepoch(epoch):
             su_batch= Variable(su_batch).cuda()*params.wf
             su_batchf= Variable(su_batchf).cuda()
             su_batchf2= Variable(su_batchf2).cuda()
-            
+
             su_batch2= Variable(su_batch2).cuda()*params.wf
             tgt_batch = Variable(torch.FloatTensor(target[stidx:stidx + params.batch_size])).cuda()
         else:
@@ -361,7 +364,7 @@ def trainepoch(epoch):
             su_batch= Variable(su_batch)*params.wf
             su_batchf= Variable(su_batchf)
             su_batchf2= Variable(su_batchf2)
-            
+
             su_batch2= Variable(su_batch2)*params.wf
             tgt_batch = Variable(torch.FloatTensor(target[stidx:stidx + params.batch_size]))
         k = s1_batch.size(1)  # actual batch size
@@ -373,17 +376,17 @@ def trainepoch(epoch):
             pred = output.data.max(1)[1]
         else:
             pred=output.data[:,0]>0
-        
+
 
         assert len(pred) == len(s1[stidx:stidx + params.batch_size])
         if params.loss==0:
             ou = F.softmax(outputu, dim=1)
-            
+
             ou2 = F.softmax(outputu2, dim=1)
             sou = F.softmax(output, dim=1)
-            
+
             sou2 = F.softmax(output2, dim=1)
- 
+
             a,_=torch.max(ou,1)
             sa,_=torch.max(sou,1)
 
@@ -393,7 +396,7 @@ def trainepoch(epoch):
             ou2=ou2*  torch.cat((a,a), 1)
             sou=sou*  torch.cat((sa,sa), 1)
             sou2=sou2*  torch.cat((sa,sa), 1)
-        
+
         else:
             ou=outputu[:,0]
             ou2=outputu2[:,0]
@@ -414,10 +417,10 @@ def trainepoch(epoch):
             dmiu=torch.mean(oop2[:,1])
             dstd=torch.std(oop2[:,1])
             loss3=loss3+torch.abs(torch.mean(oop2[:,1])-params.klmiu)+torch.abs(torch.std(oop2[:,1])-params.klsig)
-            
+
             kss=float(params.klsig)
-            
-            
+
+
             loss1 = loss_fn(oop, tgt_batch.float())
         else:
             loss1 = loss_fn(output[:,0], (tgt_batch*2-1).float())
@@ -431,7 +434,7 @@ def trainepoch(epoch):
         # backward
         optimizer.zero_grad()
         loss.backward()
-        
+
         # gradient clipping (off by default)
         shrink_factor = 1
         total_norm = 0
@@ -466,7 +469,7 @@ def trainepoch(epoch):
             last_time = time.time()
             words_count = 0
             all_costs = []
-    
+
     return 0
 
 
@@ -482,14 +485,14 @@ for jpp in range (params.sss):
     epochh = 1
     gg=params.ne0
     while not stop_training and epochh <= gg:
-        if params.bb==1:    
+        if params.bb==1:
             train_acc = trainepochb(epoch)
         else:
             train_acc = trainepoch(epoch)
         epoch += 1
         if epoch== params.me:
             stop_training=1
-            #fffa=open('opt'+params.test_data+str(params.c)+'ll'+str(params.c2)+'ll'+str(params.gnoise2)+'.txt','w')                                        
+            #fffa=open('opt'+params.test_data+str(params.c)+'ll'+str(params.c2)+'ll'+str(params.gnoise2)+'.txt','w')
             #for ee in range(q.size(0)):
             #    fffa.write(str(q.data[ee,1])+'\n')
             #fffa.close()
@@ -502,4 +505,4 @@ print('\nTEST : Epoch {0}'.format(epoch))
 torch.save(pdtb_net,
            os.path.join(params.outputdir, params.outputmodelname ))
 torch.save(pdtb_net2,
-           os.path.join(params.outputdir, '3os'+params.outputmodelname ))       
+           os.path.join(params.outputdir, '3os'+params.outputmodelname ))

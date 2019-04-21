@@ -163,20 +163,21 @@ train,valid, test,unlab ,trainu= get_pdtb(params.nlipath,params.dom,params.test_
 #print (train[s1].shape)
 _,xsl = getFeatures(os.path.join(params.nlipath,'data.txt'))
 
-#if params.test_data=="twitter":
-#    _,xst= getFeatures(os.path.join(params.nlipath,'twitters.txt'))
-#    _,xsu = getFeatures('dataset/data/twitteru.txt')
-#
-#elif params.test_data=="yelp":
-#    _,xst= getFeatures(os.path.join(params.nlipath,'ys.txt'))
-#    _,xsu = getFeatures('dataset/data/yelpu.txt')
-#
-#elif params.test_data=="movie":
-#    _,xst= getFeatures(os.path.join(params.nlipath,'ms.txt'))
-#    _,xsu = getFeatures('dataset/data/moviesu.txt')
+if params.test_data=="twitter":
+    _,xst= getFeatures(os.path.join(params.nlipath,'twitters.txt'))
+    _,xsu = getFeatures('dataset/data/twitteru.txt')
 
-_,xst= getFeatures('/home/soniassfsl26/masters/HelpfulReviewDetector/datasets/Musical_Instruments_5.txt')
-_,xsu = getFeatures('dataset/data/yelpu.txt')
+elif params.test_data=="yelp":
+    _,xst= getFeatures(os.path.join(params.nlipath,'ys.txt'))
+    _,xsu = getFeatures('dataset/data/yelpu.txt')
+
+elif params.test_data=="movie":
+    _,xst= getFeatures(os.path.join(params.nlipath,'ms.txt'))
+    _,xsu = getFeatures('dataset/data/moviesu.txt')
+
+else:
+    _,xst= getFeatures(dat.replace('_train.txt', '.txt'))
+    _,xsu = getFeatures(dat)
 
 _,xslu= getFeatures(os.path.join(params.nlipath, 'aaai15unlabeled/all.60000.sents'))
 
